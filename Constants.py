@@ -1,0 +1,7 @@
+#encoding=utf-8
+
+SPEAKING_START  = 0x00020001    # 开始讲话
+SPEAKING_STOP   = 0x00020002    # 结束讲话
+SPEAKING_CONTENT= 0x00030001    # 语音数据
+
+CMD_TYPE_NONE   = 0xFFFFFFFF    # 没有命令类型

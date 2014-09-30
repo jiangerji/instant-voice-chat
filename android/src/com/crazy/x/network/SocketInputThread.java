@@ -11,7 +11,7 @@ import java.nio.channels.SocketChannel;
 import android.util.Log;
 
 /**
- * ¿Í»§¶Ë¶ÁÏûÏ¢Ïß³Ì
+ * å®¢æˆ·ç«¯è¯»æ¶ˆæ¯çº¿ç¨‹
  * 
  * @author way
  * 
@@ -32,7 +32,7 @@ public class SocketInputThread extends Thread {
     public void run() {
         Log.d(TAG, "Start Socket Input Thread!");
         while (isStart) {
-            // ÊÖ»úÄÜÁªÍø£¬¶ÁsocketÊı¾İ
+            // æ‰‹æœºèƒ½è”ç½‘ï¼Œè¯»socketæ•°æ®
             //            if (NetManager.instance().isNetworkConnected())
             //            {
             //
@@ -54,7 +54,7 @@ public class SocketInputThread extends Thread {
 
             readSocket();
 
-            // Èç¹ûÁ¬½Ó·şÎñÆ÷Ê§°Ü,·şÎñÆ÷Á¬½ÓÊ§°Ü£¬sleep¹Ì¶¨µÄÊ±¼ä£¬ÄÜÁªÍø£¬¾Í²»ĞèÒªsleep
+            // å¦‚æœè¿æ¥æœåŠ¡å™¨å¤±è´¥,æœåŠ¡å™¨è¿æ¥å¤±è´¥ï¼Œsleepå›ºå®šçš„æ—¶é—´ï¼Œèƒ½è”ç½‘ï¼Œå°±ä¸éœ€è¦sleep
 
             //                CLog.e("socket", "TCPClient.instance().isConnect() "
             //                        + TCPClient.instance().isConnect());
@@ -69,12 +69,12 @@ public class SocketInputThread extends Thread {
             return;
         }
         try {
-            // Èç¹ûÃ»ÓĞÊı¾İ¹ıÀ´£¬Ò»Ö±ÖùÈû
+            // å¦‚æœæ²¡æœ‰æ•°æ®è¿‡æ¥ï¼Œä¸€ç›´æŸ±å¡
             while (selector.select() > 0) {
                 for (SelectionKey sk : selector.selectedKeys()) {
-                    // Èç¹û¸ÃSelectionKey¶ÔÓ¦µÄChannelÖĞÓĞ¿É¶ÁµÄÊı¾İ
+                    // å¦‚æœè¯¥SelectionKeyå¯¹åº”çš„Channelä¸­æœ‰å¯è¯»çš„æ•°æ®
                     if (sk.isReadable()) {
-                        // Ê¹ÓÃNIO¶ÁÈ¡ChannelÖĞµÄÊı¾İ
+                        // ä½¿ç”¨NIOè¯»å–Channelä¸­çš„æ•°æ®
                         SocketChannel sc = (SocketChannel) sk.channel();
                         ByteBuffer buffer = ByteBuffer.allocate(10240);
                         try {
@@ -90,9 +90,9 @@ public class SocketInputThread extends Thread {
                         }
 
                         try {
-                            // ÎªÏÂÒ»´Î¶ÁÈ¡×÷×¼±¸
+                            // ä¸ºä¸‹ä¸€æ¬¡è¯»å–ä½œå‡†å¤‡
                             sk.interestOps(SelectionKey.OP_READ);
-                            // É¾³ıÕıÔÚ´¦ÀíµÄSelectionKey
+                            // åˆ é™¤æ­£åœ¨å¤„ç†çš„SelectionKey
                             selector.selectedKeys().remove(sk);
                         } catch (CancelledKeyException e) {
                             e.printStackTrace();

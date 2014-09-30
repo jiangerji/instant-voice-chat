@@ -1,14 +1,15 @@
 package com.crazy.x.network;
+
 import java.nio.ByteBuffer;
 
 public class SocketByteBuffer {
 
     private byte[] mBuffer = null;
 
-    // Î´±»Ê¹ÓÃµÄbuffer¿ªÊ¼µÄÎ»ÖÃ
+    // æœªè¢«ä½¿ç”¨çš„bufferå¼€å§‹çš„ä½ç½®
     private int mOffset = 0;
 
-    // Õû¸öbufferµÄ³¤¶È
+    // æ•´ä¸ªbufferçš„é•¿åº¦
     private int mLength = 0;
 
     public SocketByteBuffer(ByteBuffer buffer, int count) {
@@ -17,8 +18,14 @@ public class SocketByteBuffer {
         buffer.get(mBuffer, 0, mLength);
     }
 
+    public SocketByteBuffer(byte[] buffer, int offset, int count) {
+        mBuffer = new byte[count];
+        System.arraycopy(buffer, offset, mBuffer, 0, count);
+        mLength = mBuffer.length;
+    }
+
     /**
-     * µ±Ç°Î´¶ÁÈ¡µÄbufferµÄ´óĞ¡
+     * å½“å‰æœªè¯»å–çš„bufferçš„å¤§å°
      * 
      * @return
      */
@@ -27,7 +34,7 @@ public class SocketByteBuffer {
     }
 
     /**
-     * µ±Ç°bufferµÄ´óĞ¡
+     * å½“å‰bufferçš„å¤§å°
      * 
      * @return
      */
@@ -36,14 +43,14 @@ public class SocketByteBuffer {
     }
 
     /**
-     * bufferÖØÖÃ£¬±íÊ¾bufferÖĞµÄÊı¾İ¶¼ÒÑÎŞĞ§
+     * bufferé‡ç½®ï¼Œè¡¨ç¤ºbufferä¸­çš„æ•°æ®éƒ½å·²æ— æ•ˆ
      */
     public void reset() {
         mOffset = mLength;
     }
 
     /**
-     * ·µ»Øµ±Ç°bufferÖĞËùÓĞÊı¾İ
+     * è¿”å›å½“å‰bufferä¸­æ‰€æœ‰æ•°æ®
      * 
      * @return
      */
@@ -52,7 +59,7 @@ public class SocketByteBuffer {
     }
 
     /**
-     * Ïû·ÑbufferÖĞ×Ö½Ú
+     * æ¶ˆè´¹bufferä¸­å­—èŠ‚
      * 
      * @param size
      */
@@ -61,7 +68,7 @@ public class SocketByteBuffer {
     }
 
     /**
-     * ½«bufferÖĞµÄcount×Ö½Ú¸´ÖÆµ½destÖĞ
+     * å°†bufferä¸­çš„countå­—èŠ‚å¤åˆ¶åˆ°destä¸­
      * 
      * @param dest
      * @param count
@@ -71,7 +78,7 @@ public class SocketByteBuffer {
     }
 
     /**
-     * ½«bufferÖĞµÄcount×Ö½Ú¸´ÖÆµ½dest offset¿ªÊ¼µÄÎ»ÖÃ
+     * å°†bufferä¸­çš„countå­—èŠ‚å¤åˆ¶åˆ°dest offsetå¼€å§‹çš„ä½ç½®
      * 
      * @param dest
      * @param offset

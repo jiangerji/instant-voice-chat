@@ -6,6 +6,8 @@ import java.util.ArrayList;
 
 import android.util.Log;
 
+import com.crazy.x.audio.XPlayer;
+
 public class SocketDataHandler {
     private final static String TAG = "SocketDataHandler";
 
@@ -28,7 +30,7 @@ public class SocketDataHandler {
     public void putSocketData(ByteBuffer buffer, int count) {
         synchronized (this) {
             if (buffer != null && count > 0) {
-                // buffer²»Îª¿Õ
+                // bufferä¸ä¸ºç©º
                 SocketByteBuffer socketByteBuffer = new SocketByteBuffer(buffer,
                         count);
                 mBuffers.add(socketByteBuffer);
@@ -59,7 +61,7 @@ public class SocketDataHandler {
     }
 
     /**
-     * »ñÈ¡ÃüÁîµÄÍ·²¿ĞÅÏ¢
+     * è·å–å‘½ä»¤çš„å¤´éƒ¨ä¿¡æ¯
      * 
      * @return
      */
@@ -94,7 +96,7 @@ public class SocketDataHandler {
             result = new byte[size];
             int count = 0;
 
-            // ÒÑ¾­±»Ê¹ÓÃµÄbuffer¶ÔÏó£¬ĞèÒª±»Çå³ş
+            // å·²ç»è¢«ä½¿ç”¨çš„bufferå¯¹è±¡ï¼Œéœ€è¦è¢«æ¸…æ¥š
             ArrayList<SocketByteBuffer> clearBuffer = new ArrayList<SocketByteBuffer>();
 
             int remainSize = 0;
@@ -129,13 +131,15 @@ public class SocketDataHandler {
 
     private FileOutputStream mFileOutputStream = null;
 
+    private XPlayer mXPlayer = null;
+
     /**
-     * ¶ÔÏÖÓĞµÄÊı¾İ½øĞĞ´¦Àí
+     * å¯¹ç°æœ‰çš„æ•°æ®è¿›è¡Œå¤„ç†
      * 
      * @param cmdType
-     *            ÃüÁîÀàĞÍ
+     *            å‘½ä»¤ç±»å‹
      * @param contentLength
-     *            ¸ÃÃüÁîĞ¯´øÄÚÈİ³¤¶È
+     *            è¯¥å‘½ä»¤æºå¸¦å†…å®¹é•¿åº¦
      */
     private boolean handleData(int cmdType, int contentLength) {
         boolean result = false;
@@ -158,7 +162,9 @@ public class SocketDataHandler {
                     mContentLength = 0;
                     result = true;
 
-                    mFileOutputStream = new FileOutputStream("a.pcm");
+                    mFileOutputStream = new FileOutputStream("/sdcard/b.pcm");
+                    mXPlayer = new XPlayer();
+                    mXPlayer.startPlay();
                     break;
 
                 case SPEAKING_STOP:
@@ -168,12 +174,14 @@ public class SocketDataHandler {
                     if (mFileOutputStream != null) {
                         mFileOutputStream.close();
                     }
+                    mXPlayer.finish();
                     break;
 
                 case SPEAKING_CONTENT:
                     mContentLength += contentLength;
                     result = true;
                     mFileOutputStream.write(totalCmd, 8, totalLenght - 8);
+                    mXPlayer.putData(totalCmd, 8, totalLenght - 8);
                     break;
 
                 default:
@@ -187,9 +195,9 @@ public class SocketDataHandler {
         return result;
     }
 
-    private final static int SPEAKING_START = 0x00020001; // ¿ªÊ¼½²»°
-    private final static int SPEAKING_STOP = 0x00020002; // ½áÊø½²»°
-    private final static int SPEAKING_CONTENT = 0x00030001; // ÓïÒôÊı¾İ
+    private final static int SPEAKING_START = 0x00020001; // å¼€å§‹è®²è¯
+    private final static int SPEAKING_STOP = 0x00020002; // ç»“æŸè®²è¯
+    private final static int SPEAKING_CONTENT = 0x00030001; // è¯­éŸ³æ•°æ®
 
-    private final static int CMD_TYPE_NONE = 0xFFFFFFFF; // Ã»ÓĞÃüÁîÀàĞÍ
+    private final static int CMD_TYPE_NONE = 0xFFFFFFFF; // æ²¡æœ‰å‘½ä»¤ç±»å‹
 }

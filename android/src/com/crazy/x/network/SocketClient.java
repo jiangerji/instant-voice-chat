@@ -14,23 +14,23 @@ import android.util.Log;
 public class SocketClient {
     private final static String TAG = "SocketClient";
 
-    // ĞÅµÀÑ¡ÔñÆ÷
+    // ä¿¡é“é€‰æ‹©å™¨
     private Selector selector;
 
-    // Óë·şÎñÆ÷Í¨ĞÅµÄĞÅµÀ
+    // ä¸æœåŠ¡å™¨é€šä¿¡çš„ä¿¡é“
     SocketChannel socketChannel;
 
-    // ÒªÁ¬½ÓµÄ·şÎñÆ÷IpµØÖ·
+    // è¦è¿æ¥çš„æœåŠ¡å™¨Ipåœ°å€
     private String hostIp;
 
-    // ÒªÁ¬½ÓµÄÔ¶³Ì·şÎñÆ÷ÔÚ¼àÌıµÄ¶Ë¿Ú
+    // è¦è¿æ¥çš„è¿œç¨‹æœåŠ¡å™¨åœ¨ç›‘å¬çš„ç«¯å£
     private int hostListenningPort;
 
     private static SocketClient s_Tcp = null;
 
     public boolean isInitialized = false;
 
-    private final static String SOCKET_SERVER = "localhost";
+    private final static String SOCKET_SERVER = "192.168.41.101";
     private final static int SOCKET_PORT = 9999;
 
     public static synchronized SocketClient instance() {
@@ -41,7 +41,7 @@ public class SocketClient {
     }
 
     /**
-     * ¹¹Ôìº¯Êı
+     * æ„é€ å‡½æ•°
      * 
      * @param HostIp
      * @param HostListenningPort
@@ -64,7 +64,7 @@ public class SocketClient {
     }
 
     /**
-     * ³õÊ¼»¯
+     * åˆå§‹åŒ–
      * 
      * @throws IOException
      */
@@ -72,17 +72,17 @@ public class SocketClient {
         boolean done = false;
 
         try {
-            // ´ò¿ª¼àÌıĞÅµÀ²¢ÉèÖÃÎª·Ç×èÈûÄ£Ê½
+            // æ‰“å¼€ç›‘å¬ä¿¡é“å¹¶è®¾ç½®ä¸ºéé˜»å¡æ¨¡å¼
             socketChannel = SocketChannel.open(new InetSocketAddress(hostIp,
                     hostListenningPort));
             if (socketChannel != null) {
                 socketChannel.socket().setTcpNoDelay(false);
                 socketChannel.socket().setKeepAlive(true);
-                // ÉèÖÃ¶ÁsocketµÄtimeoutÊ±¼ä
+                // è®¾ç½®è¯»socketçš„timeoutæ—¶é—´
                 socketChannel.socket().setSoTimeout(10000);
                 socketChannel.configureBlocking(false);
 
-                // ´ò¿ª²¢×¢²áÑ¡ÔñÆ÷µ½ĞÅµÀ
+                // æ‰“å¼€å¹¶æ³¨å†Œé€‰æ‹©å™¨åˆ°ä¿¡é“
                 selector = Selector.open();
                 if (selector != null) {
                     socketChannel.register(selector, SelectionKey.OP_READ);
@@ -117,7 +117,7 @@ public class SocketClient {
     }
 
     /**
-     * ·¢ËÍ×Ö·û´®µ½·şÎñÆ÷
+     * å‘é€å­—ç¬¦ä¸²åˆ°æœåŠ¡å™¨
      * 
      * @param message
      * @throws IOException
@@ -132,7 +132,7 @@ public class SocketClient {
     }
 
     /**
-     * ·¢ËÍÊı¾İ
+     * å‘é€æ•°æ®
      * 
      * @param bytes
      * @throws IOException
@@ -155,7 +155,7 @@ public class SocketClient {
     }
 
     /**
-     * SocketÁ¬½ÓÊÇ·ñÊÇÕı³£µÄ
+     * Socketè¿æ¥æ˜¯å¦æ˜¯æ­£å¸¸çš„
      * 
      * @return
      */
@@ -168,7 +168,7 @@ public class SocketClient {
     }
 
     /**
-     * ¹Ø±Õsocket ÖØĞÂÁ¬½Ó
+     * å…³é—­socket é‡æ–°è¿æ¥
      * 
      * @return
      */
@@ -189,7 +189,7 @@ public class SocketClient {
     }
 
     /**
-     * ·şÎñÆ÷ÊÇ·ñ¹Ø±Õ£¬Í¨¹ı·¢ËÍÒ»¸ösocketĞÅÏ¢
+     * æœåŠ¡å™¨æ˜¯å¦å…³é—­ï¼Œé€šè¿‡å‘é€ä¸€ä¸ªsocketä¿¡æ¯
      * 
      * @return
      */
@@ -210,7 +210,7 @@ public class SocketClient {
     }
 
     /**
-     * ¹Ø±Õsocket
+     * å…³é—­socket
      */
     public void closeTCPSocket() {
         try {
@@ -230,7 +230,7 @@ public class SocketClient {
     }
 
     /**
-     * Ã¿´Î¶ÁÍêÊı¾İºó£¬ĞèÒªÖØĞÂ×¢²áselector£¬¶ÁÈ¡Êı¾İ
+     * æ¯æ¬¡è¯»å®Œæ•°æ®åï¼Œéœ€è¦é‡æ–°æ³¨å†Œselectorï¼Œè¯»å–æ•°æ®
      */
     public synchronized void repareRead() {
         if (socketChannel != null) {

@@ -10,7 +10,7 @@ public class SocketThreadManager {
     //
     //    private SocketHeartThread mHeartThread = null;
 
-    // »ñÈ¡µ¥Àı
+    // è·å–å•ä¾‹
     public static SocketThreadManager sharedInstance() {
         if (s_SocketManager == null) {
             s_SocketManager = new SocketThreadManager();
@@ -18,19 +18,20 @@ public class SocketThreadManager {
         return s_SocketManager;
     }
 
-    // µ¥Àı£¬²»ÔÊĞíÔÚÍâ²¿¹¹½¨¶ÔÏó
+    // å•ä¾‹ï¼Œä¸å…è®¸åœ¨å¤–éƒ¨æ„å»ºå¯¹è±¡
     private SocketThreadManager() {
         //        mHeartThread = new SocketHeartThread();
-        mInputThread = new SocketInputThread();
+        //        mInputThread = new SocketInputThread();
         //        mOutThread = new SocketOutputThread();
     }
 
     /**
-     * Æô¶¯Ïß³Ì
+     * å¯åŠ¨çº¿ç¨‹
      */
 
     public void startThreads() {
         //        mHeartThread.start();
+        mInputThread = new SocketInputThread();
         mInputThread.setStart(true);
         mInputThread.start();
         //        mOutThread.start();
@@ -38,7 +39,7 @@ public class SocketThreadManager {
     }
 
     /**
-     * stopÏß³Ì
+     * stopçº¿ç¨‹
      */
     public void stopThreads() {
         //        mHeartThread.stopThread();

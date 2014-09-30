@@ -31,8 +31,8 @@ public class SocketThreadManager {
 
     public void startThreads() {
         //        mHeartThread.start();
-        mInputThread.start();
         mInputThread.setStart(true);
+        mInputThread.start();
         //        mOutThread.start();
         // mDnsthread.start();
     }

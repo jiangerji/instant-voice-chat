@@ -3,9 +3,12 @@ package com.crazy.x.network;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
+import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+
+import android.util.Log;
 
 /**
  * 客户端读消息线程
@@ -16,9 +19,7 @@ import java.nio.channels.SocketChannel;
 public class SocketInputThread extends Thread {
     private boolean isStart = true;
 
-    private static String tag = "socket";
-
-    // private MessageListener messageListener;// 消息监听接口对象
+    private static String TAG = "SocketInputThread";
 
     public SocketInputThread() {
     }
@@ -29,6 +30,7 @@ public class SocketInputThread extends Thread {
 
     @Override
     public void run() {
+        Log.d(TAG, "Start Socket Input Thread!");
         while (isStart) {
             // 手机能联网，读socket数据
             //            if (NetManager.instance().isNetworkConnected())
@@ -74,25 +76,18 @@ public class SocketInputThread extends Thread {
                     if (sk.isReadable()) {
                         // 使用NIO读取Channel中的数据
                         SocketChannel sc = (SocketChannel) sk.channel();
-                        ByteBuffer buffer = ByteBuffer.allocate(1024);
+                        ByteBuffer buffer = ByteBuffer.allocate(10240);
                         try {
-                            sc.read(buffer);
+                            int count = sc.read(buffer);
+                            buffer.flip();
+                            Log.d(TAG, "Socket read " + count
+                                    + "bytes!");
+
+                            SocketDataHandler.getInstance()
+                                    .putSocketData(buffer, count);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        buffer.flip();
-                        SocketDataHandler.getInstance().putSocketData(buffer);
-                        //                        String receivedString = "";
-                        //                        // 打印收到的数据
-                        //                        try {
-                        //                            receivedString = Charset.forName("UTF-8")
-                        //                                    .newDecoder().decode(buffer).toString();
-                        //                        } catch (CharacterCodingException e) {
-                        //                            e.printStackTrace();
-                        //                        }
-                        //                        System.out.println("reveive:" + receivedString);
-                        //                        buffer.clear();
-                        //                        buffer = null;
 
                         try {
                             // 为下一次读取作准备
@@ -109,7 +104,7 @@ public class SocketInputThread extends Thread {
 
         } catch (IOException e1) {
             e1.printStackTrace();
-            setStart(false);
+        } catch (ClosedSelectorException e2) {
         }
     }
 

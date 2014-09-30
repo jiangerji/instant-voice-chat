@@ -9,8 +9,11 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
+import android.util.Log;
+
 public class SocketClient {
-    //    private final static String TAG = "SocketClient";
+    private final static String TAG = "SocketClient";
+
     // ÐÅµÀÑ¡ÔñÆ÷
     private Selector selector;
 
@@ -94,6 +97,8 @@ public class SocketClient {
                 socketChannel.close();
             }
         }
+
+        Log.d(TAG, "Socket Client Initialize Finish!");
     }
 
     static void blockUntil(SelectionKey key, long timeout) throws IOException {
@@ -117,8 +122,7 @@ public class SocketClient {
      * @param message
      * @throws IOException
      */
-    public void sendMsg(String message) throws IOException
-    {
+    public void sendMsg(String message) throws IOException {
         ByteBuffer writeBuffer = ByteBuffer.wrap(message.getBytes("utf-8"));
 
         if (socketChannel == null) {

@@ -86,15 +86,16 @@ class EchoClient(protocol.Protocol):
         self.sendSpeakingContent()
 
     def sendSpeakingContent(self):
-        fp = open("1.pcm", "rb")
-        bufferSize = 100*1024
-        content = fp.read()
-        index = 0
-        while index < len(content):
-            self.sendCmd(SPEAKING_CONTENT, content[index:min(index+bufferSize, len(content))])
-            index += bufferSize
+        for i in range(100):
+            fp = open("1.pcm", "rb")
+            bufferSize = 100*1024
+            content = fp.read()
+            index = 0
+            while index < len(content):
+                self.sendCmd(SPEAKING_CONTENT, content[index:min(index+bufferSize, len(content))])
+                index += bufferSize
 
-        fp.close()
+            fp.close()
         self.stopSpeaking()
 
     def stopSpeaking(self):

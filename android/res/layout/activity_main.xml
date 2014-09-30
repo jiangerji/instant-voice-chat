@@ -10,4 +10,16 @@
         android:layout_height="wrap_content"
         android:text="Start Socket" />
 
+    <Button
+        android:id="@+id/speakingBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Hold To Speaking" />
+
+    <Button
+        android:id="@+id/playBtn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start To Playing" />
+
 </LinearLayout>

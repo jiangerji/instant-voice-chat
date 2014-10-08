@@ -13,6 +13,7 @@ import android.view.View.OnLongClickListener;
 import com.crazy.x.audio.XPlayer;
 import com.crazy.x.audio.XRecorder;
 import com.crazy.x.audio.XRecorder.PCMRecorderListener;
+import com.crazy.x.network.SocketCmdUtils;
 import com.crazy.x.network.SocketThreadManager;
 import com.linekong.voice.core.Speex;
 
@@ -49,8 +50,11 @@ public class MainActivity extends Activity {
 
             @Override
             public boolean onLongClick(View v) {
+                socketThreadManager.sendMsg(SocketCmdUtils.sendSpeakingStart());
+
                 xRecorder = new XRecorder(mListener);
                 xRecorder.startRecord();
+
                 return false;
             }
         });
@@ -104,6 +108,8 @@ public class MainActivity extends Activity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            socketThreadManager.sendMsg(SocketCmdUtils.sendSpeakingStop());
         }
 
         @Override
@@ -113,6 +119,9 @@ public class MainActivity extends Activity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            socketThreadManager.sendMsg(SocketCmdUtils.sendSpeakingContent(content,
+                    length));
         }
     };
 }

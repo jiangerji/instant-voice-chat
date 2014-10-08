@@ -156,7 +156,7 @@ public class SocketDataHandler {
                 Log.d(TAG, "Handle Data Length: " + totalCmd.length
                         + " " + mContentLength);
                 switch (cmdType) {
-                case SPEAKING_START:
+                case SocketCmdUtils.SPEAKING_START:
                     Log.d(TAG, "Speaking start:"
                             + new String(totalCmd, 8, totalCmd.length - 8));
                     mContentLength = 0;
@@ -167,7 +167,7 @@ public class SocketDataHandler {
                     mXPlayer.startPlay();
                     break;
 
-                case SPEAKING_STOP:
+                case SocketCmdUtils.SPEAKING_STOP:
                     Log.d(TAG, "Speaking stop:"
                             + new String(totalCmd, 8, totalCmd.length - 8));
                     result = true;
@@ -177,7 +177,7 @@ public class SocketDataHandler {
                     mXPlayer.finish();
                     break;
 
-                case SPEAKING_CONTENT:
+                case SocketCmdUtils.SPEAKING_CONTENT:
                     mContentLength += contentLength;
                     result = true;
                     mFileOutputStream.write(totalCmd, 8, totalLenght - 8);
@@ -195,9 +195,4 @@ public class SocketDataHandler {
         return result;
     }
 
-    private final static int SPEAKING_START = 0x00020001; // 开始讲话
-    private final static int SPEAKING_STOP = 0x00020002; // 结束讲话
-    private final static int SPEAKING_CONTENT = 0x00030001; // 语音数据
-
-    private final static int CMD_TYPE_NONE = 0xFFFFFFFF; // 没有命令类型
 }

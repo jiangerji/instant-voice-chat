@@ -1,6 +1,7 @@
 package com.crazy.x.audio;
 
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -66,11 +67,13 @@ public class XPlayer extends Thread {
 
             Log.d(TAG, "start play stream!");
             byte[] tempBuffer = null;
+            FileOutputStream fos = new FileOutputStream("/sdcard/aaa.pcm");
             while (isRunning()) {
 
                 synchronized (mAudioBuffers) {
                     if (mAudioBuffers.size() > 0) {
                         tempBuffer = mAudioBuffers.poll().array();
+                        fos.write(tempBuffer, 0, tempBuffer.length);
                         atrack.write(tempBuffer, 0, tempBuffer.length);
                     } else if (mFillBufferFinished) {
                         Log.d(TAG, "Play Finished!");
@@ -78,6 +81,7 @@ public class XPlayer extends Thread {
                     }
                 }
             }
+            fos.close();
         } catch (Exception e) {
             Log.d(TAG, "Exeption:" + e.toString());
         } finally {

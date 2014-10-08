@@ -5,8 +5,8 @@ public class SocketThreadManager {
     private static SocketThreadManager s_SocketManager = null;
 
     private SocketInputThread mInputThread = null;
+    private SocketOutputThread mOutThread = null;
 
-    //    private SocketOutputThread mOutThread = null;
     //
     //    private SocketHeartThread mHeartThread = null;
 
@@ -34,6 +34,9 @@ public class SocketThreadManager {
         mInputThread = new SocketInputThread();
         mInputThread.setStart(true);
         mInputThread.start();
+
+        mOutThread = new SocketOutputThread();
+        mOutThread.start();
         //        mOutThread.start();
         // mDnsthread.start();
     }
@@ -44,7 +47,7 @@ public class SocketThreadManager {
     public void stopThreads() {
         //        mHeartThread.stopThread();
         mInputThread.setStart(false);
-        //        mOutThread.setStart(false);
+        mOutThread.setStart(false);
     }
 
     public static void releaseInstance() {
@@ -54,10 +57,9 @@ public class SocketThreadManager {
         }
     }
 
-    //    public void sendMsg(byte[] buffer, Handler handler) {
-    //        MsgEntity entity = new MsgEntity(buffer, handler);
-    //        mOutThread.addMsgToSendList(entity);
-    //    }
+    public void sendMsg(byte[] buffer) {
+        mOutThread.addMsgToSendList(buffer);
+    }
 
     public static void main(String[] args) throws Exception {
         SocketThreadManager socketThreadManager = SocketThreadManager.sharedInstance();

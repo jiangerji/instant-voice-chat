@@ -40,7 +40,6 @@ public class XRecorder extends Thread {
 
         @Override
         public void onEncoderStart() {
-            // TODO Auto-generated method stub
 
         }
 

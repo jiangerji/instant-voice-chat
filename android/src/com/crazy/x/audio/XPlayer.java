@@ -13,6 +13,7 @@ import android.util.Log;
 
 import com.crazy.x.audio.XDecoder.XDecoderListener;
 import com.crazy.x.network.SocketByteBuffer;
+import com.crazy.x.utils.CommonUtils;
 import com.linekong.voice.util.Params;
 
 public class XPlayer extends Thread {
@@ -64,7 +65,7 @@ public class XPlayer extends Thread {
                     .setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
 
             decoder = new XDecoder(new XDecoderListener() {
-                FileOutputStream fos = new FileOutputStream(DEBUG_FILENAME);
+                FileOutputStream fos = new FileOutputStream("/sdcard/s.pcm");
                 AudioTrack mAudioTrack = null;
 
                 @Override
@@ -103,20 +104,28 @@ public class XPlayer extends Thread {
                 @Override
                 public void onDecoderContent(short[] content, int length) {
                     mAudioTrack.write(content, 0, length);
+
+                    byte[] buffer = new byte[length * 2];
+                    CommonUtils.short2byte(content, buffer, length);
+                    try {
+                        fos.write(buffer, 0, length * 2);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
             decoder.startDecoder();
 
             Log.d(TAG, "Start Play Stream!");
             byte[] tempBuffer = null;
-            FileOutputStream fos = new FileOutputStream(DEBUG_FILENAME);
+            //            FileOutputStream fos = new FileOutputStream(DEBUG_FILENAME);
 
             while (isRunning()) {
 
                 synchronized (mMutex) {
                     if (mAudioBuffers.size() > 0) {
                         tempBuffer = mAudioBuffers.poll().array();
-                        fos.write(tempBuffer);
+                        //                        fos.write(tempBuffer);
                         decoder.putData(tempBuffer, tempBuffer.length);
                     } else if (mFillBufferFinished) {
                         Log.d(TAG, "Play Finished!");
@@ -127,7 +136,7 @@ public class XPlayer extends Thread {
                 }
             }
 
-            fos.close();
+            //            fos.close();
 
         } catch (Exception e) {
             Log.d(TAG, "Exeption:" + e.toString());

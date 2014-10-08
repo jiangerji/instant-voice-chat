@@ -34,11 +34,10 @@ public class SocketCmdUtils {
         cmdContent[2] = (byte) ((cmd & 0x00FF0000) >> 16);
         cmdContent[3] = (byte) ((cmd & 0xFF000000) >> 24);
 
-        int length = content.length;
-        cmdContent[4] = (byte) (length & 0x000000FF);
-        cmdContent[5] = (byte) ((length & 0x0000FF00) >> 8);
-        cmdContent[6] = (byte) ((length & 0x00FF0000) >> 16);
-        cmdContent[7] = (byte) ((length & 0xFF000000) >> 24);
+        cmdContent[4] = (byte) (count & 0x000000FF);
+        cmdContent[5] = (byte) ((count & 0x0000FF00) >> 8);
+        cmdContent[6] = (byte) ((count & 0x00FF0000) >> 16);
+        cmdContent[7] = (byte) ((count & 0xFF000000) >> 24);
 
         System.arraycopy(content, 0, cmdContent, 8, count);
         return cmdContent;

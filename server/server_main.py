@@ -52,11 +52,11 @@ class Echo(protocol.Protocol):
 
     def handleData(self, cmdType, contentLength):
         cmdLength = contentLength + 8
+        log.msg("Handle cmd: 0x%08x %d"%(cmdType, cmdLength))
         if len(self.previousData) >= cmdLength:
             format = "2I%ds"%contentLength
             cmdType, contentLength, content = struct.unpack(format, self.previousData[0:cmdLength])
             # 数据足够处理一条命令
-            log.msg("Handle cmd: 0x%08x %d"%(cmdType, cmdLength))
             if cmdType == SPEAKING_CONTENT:
                 if self.speakingFile != None:
                     self.speakingFile.write(content)

@@ -1,7 +1,7 @@
 package com.crazy.x.network;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * 客户端写消息线程
@@ -14,10 +14,10 @@ public class SocketOutputThread extends Thread
     private boolean isStart = true;
     private static String TAG = "SocketOutputThread";
 
-    private List<SocketByteBuffer> sendMsgList;
+    private Queue<SocketByteBuffer> sendMsgList;
 
     public SocketOutputThread() {
-        sendMsgList = new CopyOnWriteArrayList<SocketByteBuffer>();
+        sendMsgList = new LinkedList<SocketByteBuffer>();
     }
 
     public void setStart(boolean isStart) {
@@ -47,7 +47,7 @@ public class SocketOutputThread extends Thread
         synchronized (this) {
             SocketByteBuffer socketByteBuffer = new SocketByteBuffer(msg,
                     0, msg.length);
-            this.sendMsgList.add(socketByteBuffer);
+            this.sendMsgList.offer(socketByteBuffer);
             notify();
         }
     }
@@ -58,17 +58,26 @@ public class SocketOutputThread extends Thread
             // 锁发送list
             synchronized (sendMsgList) {
                 // 发送消息
-                for (SocketByteBuffer msg : sendMsgList) {
-
+                while (sendMsgList.size() > 0) {
                     try {
-                        sendMsg(msg.array());
-                        sendMsgList.remove(msg);
-                        // 成功消息，通过hander回传
+                        byte[] buf = sendMsgList.poll().array();
+                        sendMsg(buf);
                     } catch (Exception e) {
                         e.printStackTrace();
-                        // 错误消息，通过hander回传
                     }
                 }
+
+                //                for (SocketByteBuffer msg : sendMsgList) {
+                //
+                //                    try {
+                //                        sendMsg(msg.array());
+                //                        sendMsgList.remove(msg);
+                //                        // 成功消息，通过hander回传
+                //                    } catch (Exception e) {
+                //                        e.printStackTrace();
+                //                        // 错误消息，通过hander回传
+                //                    }
+                //                }
             }
 
             synchronized (this) {

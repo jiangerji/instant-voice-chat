@@ -5,7 +5,7 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.util.Log;
 
-import com.crazy.x.utils.CommonUtils;
+import com.crazy.x.audio.XEncoder.XEncoderListener;
 import com.linekong.voice.core.Speex;
 import com.linekong.voice.util.Params;
 
@@ -29,12 +29,40 @@ public class XRecorder extends Thread {
         mListener = listener;
     }
 
+    private XEncoderListener mEncoderListener = new XEncoderListener() {
+
+        @Override
+        public void onEncoderStop() {
+            if (mListener != null) {
+                mListener.onRecordFinish();
+            }
+        }
+
+        @Override
+        public void onEncoderStart() {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public void onEncoderContent(byte[] content, int length) {
+            Log.d(TAG, "onEncoderContent: " + length + "bytes");
+            if (mListener != null) {
+                mListener.onRecordContent(content, length);
+            }
+        }
+    };
+
+    @SuppressWarnings("deprecation")
     @Override
     public void run() {
         super.run();
 
         android.os.Process
                 .setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+
+        XEncoder encoder = new XEncoder(mEncoderListener);
+        encoder.startEncoder();
 
         // 通知录音进程已经开始
         int bufferRead = 0;
@@ -52,7 +80,7 @@ public class XRecorder extends Thread {
         bufferSize = (bufferSize / frameSize) * frameSize;
 
         short[] tempBuffer = new short[bufferSize / 2];
-        byte[] byteBuffer = new byte[bufferSize];
+        //        byte[] byteBuffer = new byte[bufferSize];
         AudioRecord recordInstance = new AudioRecord(
                 MediaRecorder.AudioSource.MIC,
                 Params.mFrequency,
@@ -70,17 +98,15 @@ public class XRecorder extends Thread {
             while (isRunning()) {
 
                 bufferRead = recordInstance.read(tempBuffer, 0, bufferSize / 2);
+                //                bufferRead = recordInstance.read(byteBuffer, 0, bufferSize);
 
                 if (bufferRead > 0) {
                     // 写入PCM文件，debug使用
                     try {
-                        CommonUtils.short2byte(tempBuffer,
-                                byteBuffer, bufferRead);
+                        //                        CommonUtils.short2byte(tempBuffer,
+                        //                                byteBuffer, bufferRead);
 
-                        if (mListener != null) {
-                            mListener.onRecordContent(byteBuffer,
-                                    bufferRead * 2);
-                        }
+                        encoder.putData(tempBuffer, bufferRead);
                     } catch (Exception e) {
                         Log.v(TAG, "onRecordContent exception:" + e.toString());
                     }
@@ -89,9 +115,7 @@ public class XRecorder extends Thread {
 
             recordInstance.stop();
             recordInstance.release();
-            if (mListener != null) {
-                mListener.onRecordFinish();
-            }
+            encoder.stopEncoder();
         } else {
             Log.v(TAG, "init audio recorder failed!");
         }

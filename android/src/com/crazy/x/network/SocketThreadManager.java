@@ -46,8 +46,13 @@ public class SocketThreadManager {
      */
     public void stopThreads() {
         //        mHeartThread.stopThread();
-        mInputThread.setStart(false);
-        mOutThread.setStart(false);
+        if (mInputThread != null) {
+            mInputThread.setStart(false);
+        }
+
+        if (mOutThread != null) {
+            mOutThread.setStart(false);
+        }
     }
 
     public static void releaseInstance() {
@@ -58,7 +63,9 @@ public class SocketThreadManager {
     }
 
     public void sendMsg(byte[] buffer) {
-        mOutThread.addMsgToSendList(buffer);
+        if (mOutThread != null) {
+            mOutThread.addMsgToSendList(buffer);
+        }
     }
 
     public static void main(String[] args) throws Exception {

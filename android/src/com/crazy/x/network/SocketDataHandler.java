@@ -72,15 +72,15 @@ public class SocketDataHandler {
     private byte[] getByte(int size) {
         byte[] result = null;
         if (mPreviousBufferSize >= size) {
-            result = new byte[8];
+            result = new byte[size];
             int count = 0;
             for (SocketByteBuffer buffer : mBuffers) {
                 if (count + buffer.remainSize() > size) {
-                    buffer.copyTo(result, size - count);
+                    buffer.copyTo(result, count, size - count);
                     count = size;
                     break;
                 } else {
-                    buffer.copyTo(result, buffer.remainSize());
+                    buffer.copyTo(result, count, buffer.remainSize());
                     count += buffer.remainSize();
                 }
             }

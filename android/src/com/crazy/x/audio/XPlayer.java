@@ -11,31 +11,37 @@ import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.Log;
 
+import com.crazy.x.audio.XDecoder.XDecoderListener;
 import com.crazy.x.network.SocketByteBuffer;
-import com.linekong.voice.core.Speex;
 import com.linekong.voice.util.Params;
 
 public class XPlayer extends Thread {
     private final static String TAG = "XPlayer";
 
-    private final Object mutex = new Object();
-    private volatile boolean isRunning = true;
+    /*********** debug parameters begin *********/
+    public boolean DEBUG_MODE = false;
+    private String DEBUG_FILENAME = "/sdcard/s.spx";
+    /*********** debug parameters end *********/
 
-    private Speex mSpeex = Speex.getInstance();
+    private final Object mMutex = new Object();
+    private volatile boolean isRunning = true;
 
     private Queue<SocketByteBuffer> mAudioBuffers = new LinkedList<SocketByteBuffer>();
 
     public void putData(byte[] audioData, int offset, int count) {
         Log.d(TAG, "putData:" + offset + " " + count);
-        synchronized (mAudioBuffers) {
+        synchronized (mMutex) {
             mFillBufferFinished = false;
             mAudioBuffers.offer(new SocketByteBuffer(audioData, offset, count));
+
+            mMutex.notify();
         }
     }
 
     private boolean mFillBufferFinished = false;
 
     public void finish() {
+        Log.d(TAG, "Finish streaming speaking!");
         mFillBufferFinished = true;
     }
 
@@ -43,56 +49,90 @@ public class XPlayer extends Thread {
     public void run() {
         super.run();
 
-        playStream();
+        if (DEBUG_MODE) {
+            playFile();
+        } else {
+            playStream();
+        }
     }
 
     @SuppressWarnings("deprecation")
     private void playStream() {
-        AudioTrack atrack = null;
+        XDecoder decoder = null;
         try {
             android.os.Process
                     .setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
 
-            int bufSize = AudioTrack.getMinBufferSize(
-                    Params.mFrequency,
-                    AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                    Params.mFormat);
-            atrack = new AudioTrack(AudioManager.STREAM_MUSIC,
-                    Params.mFrequency,
-                    AudioFormat.CHANNEL_CONFIGURATION_MONO,
-                    Params.mFormat, bufSize, AudioTrack.MODE_STREAM);
+            decoder = new XDecoder(new XDecoderListener() {
+                FileOutputStream fos = new FileOutputStream(DEBUG_FILENAME);
+                AudioTrack mAudioTrack = null;
 
-            atrack.setPlaybackRate(Params.mFrequency);
-            atrack.play();
+                @Override
+                public void onDecoderStop() {
+                    mAudioTrack.stop();
+                    mAudioTrack.release();
 
-            Log.d(TAG, "start play stream!");
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        fos.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onDecoderStart() {
+                    int bufSize = AudioTrack.getMinBufferSize(
+                            Params.mFrequency,
+                            AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                            Params.mFormat);
+                    mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC,
+                            Params.mFrequency,
+                            AudioFormat.CHANNEL_CONFIGURATION_MONO,
+                            Params.mFormat, bufSize, AudioTrack.MODE_STREAM);
+
+                    mAudioTrack.setPlaybackRate(Params.mFrequency);
+                    mAudioTrack.play();
+                }
+
+                @Override
+                public void onDecoderContent(short[] content, int length) {
+                    mAudioTrack.write(content, 0, length);
+                }
+            });
+            decoder.startDecoder();
+
+            Log.d(TAG, "Start Play Stream!");
             byte[] tempBuffer = null;
-            FileOutputStream fos = new FileOutputStream("/sdcard/aaa.pcm");
+            FileOutputStream fos = new FileOutputStream(DEBUG_FILENAME);
+
             while (isRunning()) {
 
-                synchronized (mAudioBuffers) {
+                synchronized (mMutex) {
                     if (mAudioBuffers.size() > 0) {
                         tempBuffer = mAudioBuffers.poll().array();
-                        fos.write(tempBuffer, 0, tempBuffer.length);
-                        atrack.write(tempBuffer, 0, tempBuffer.length);
+                        fos.write(tempBuffer);
+                        decoder.putData(tempBuffer, tempBuffer.length);
                     } else if (mFillBufferFinished) {
                         Log.d(TAG, "Play Finished!");
                         break;
+                    } else {
+                        mMutex.wait();
                     }
                 }
             }
+
             fos.close();
+
         } catch (Exception e) {
             Log.d(TAG, "Exeption:" + e.toString());
         } finally {
-            atrack.stop();
-            atrack.release();
 
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -100,8 +140,9 @@ public class XPlayer extends Thread {
     private void playFile() {
         FileInputStream mFileInputStream = null;
         AudioTrack atrack = null;
+        XDecoder decoder = null;
         try {
-            mFileInputStream = new FileInputStream("/sdcard/a.pcm");
+            mFileInputStream = new FileInputStream(DEBUG_FILENAME);
 
             byte[] buffer = new byte[1024];
             android.os.Process
@@ -119,29 +160,51 @@ public class XPlayer extends Thread {
             atrack.setPlaybackRate(Params.mFrequency);
             atrack.play();
 
+            final AudioTrack mAudioTrack = atrack;
+
+            decoder = new XDecoder(new XDecoderListener() {
+
+                @Override
+                public void onDecoderStop() {
+                    mAudioTrack.stop();
+                    mAudioTrack.release();
+
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onDecoderStart() {
+                }
+
+                @Override
+                public void onDecoderContent(short[] content, int length) {
+                    mAudioTrack.write(content, 0, length);
+                }
+            });
+            decoder.startDecoder();
+
             int count = 0;
             while (isRunning() && (count = mFileInputStream.read(buffer)) > 0) {
                 Log.d(TAG, "write " + count + "bytes");
-                atrack.write(buffer, 0, count);
+                decoder.putData(buffer, count);
             }
         } catch (IOException e) {
             Log.d(TAG, "Exeption:" + e.toString());
         } finally {
+            if (decoder != null) {
+                decoder.stopDecoder();
+            }
+
             if (mFileInputStream != null) {
                 try {
                     mFileInputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }
-
-            atrack.stop();
-            atrack.release();
-
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -150,6 +213,7 @@ public class XPlayer extends Thread {
      * 启动播放录音
      */
     public void startPlay() {
+        Log.d(TAG, "Start streaming speaking!");
         setRunning(true);
         start();
     }
@@ -162,14 +226,14 @@ public class XPlayer extends Thread {
     }
 
     private void setRunning(boolean isRunning) {
-        synchronized (mutex) {
+        synchronized (mMutex) {
             this.isRunning = isRunning;
-            mutex.notify();
+            mMutex.notify();
         }
     }
 
     public boolean isRunning() {
-        synchronized (mutex) {
+        synchronized (mMutex) {
             return isRunning;
         }
     }

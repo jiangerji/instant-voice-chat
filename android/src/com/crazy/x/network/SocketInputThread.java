@@ -76,7 +76,7 @@ public class SocketInputThread extends Thread {
                     if (sk.isReadable()) {
                         // 使用NIO读取Channel中的数据
                         SocketChannel sc = (SocketChannel) sk.channel();
-                        ByteBuffer buffer = ByteBuffer.allocate(10240);
+                        ByteBuffer buffer = ByteBuffer.allocate(1024);
                         try {
                             int count = sc.read(buffer);
                             buffer.flip();

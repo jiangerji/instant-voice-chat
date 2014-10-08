@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -75,6 +76,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 XPlayer xPlayer = new XPlayer();
+                xPlayer.DEBUG_MODE = true;
                 xPlayer.startPlay();
             }
         });
@@ -95,7 +97,7 @@ public class MainActivity extends Activity {
         @Override
         public void onRecordStart() {
             try {
-                mFileOutputStream = new FileOutputStream("/sdcard/a.pcm");
+                mFileOutputStream = new FileOutputStream("/sdcard/s.spx");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -120,6 +122,7 @@ public class MainActivity extends Activity {
                 e.printStackTrace();
             }
 
+            Log.d("cmd", "Send Speaing Content:" + length);
             socketThreadManager.sendMsg(SocketCmdUtils.sendSpeakingContent(content,
                     length));
         }

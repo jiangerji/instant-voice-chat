@@ -6,6 +6,7 @@ import android.media.MediaRecorder;
 import android.util.Log;
 
 import com.crazy.x.audio.XEncoder.XEncoderListener;
+import com.crazy.x.utils.CommonUtils;
 import com.linekong.voice.core.Speex;
 import com.linekong.voice.util.Params;
 
@@ -19,6 +20,8 @@ public class XRecorder extends Thread {
         public void onRecordStart();
 
         public void onRecordContent(byte[] content, int length);
+
+        public void onRecondPCMContent(byte[] content, int length);
 
         public void onRecordFinish();
     }
@@ -79,7 +82,7 @@ public class XRecorder extends Thread {
         bufferSize = (bufferSize / frameSize) * frameSize;
 
         short[] tempBuffer = new short[bufferSize / 2];
-        //        byte[] byteBuffer = new byte[bufferSize];
+        byte[] byteBuffer = new byte[bufferSize];
         AudioRecord recordInstance = new AudioRecord(
                 MediaRecorder.AudioSource.MIC,
                 Params.mFrequency,
@@ -102,9 +105,10 @@ public class XRecorder extends Thread {
                 if (bufferRead > 0) {
                     // 写入PCM文件，debug使用
                     try {
-                        //                        CommonUtils.short2byte(tempBuffer,
-                        //                                byteBuffer, bufferRead);
+                        CommonUtils.short2byte(tempBuffer, byteBuffer,
+                                bufferRead);
 
+                        mListener.onRecondPCMContent(byteBuffer, bufferRead);
                         encoder.putData(tempBuffer, bufferRead);
                     } catch (Exception e) {
                         Log.v(TAG, "onRecordContent exception:" + e.toString());

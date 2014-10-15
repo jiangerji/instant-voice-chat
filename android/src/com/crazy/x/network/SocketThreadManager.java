@@ -53,6 +53,9 @@ public class SocketThreadManager {
         if (mOutThread != null) {
             mOutThread.setStart(false);
         }
+
+        SocketDataHandler.getInstance().release();
+        SocketClient.instance().release();
     }
 
     public static void releaseInstance() {

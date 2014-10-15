@@ -89,6 +89,8 @@ public class SocketClient {
                     done = true;
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             if (!done && selector != null) {
                 selector.close();
@@ -243,6 +245,14 @@ public class SocketClient {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void release() {
+        Log.d(TAG, "release TCP Socket");
+        closeTCPSocket();
+        selector = null;
+        socketChannel = null;
+        s_Tcp = null;
     }
 
 }

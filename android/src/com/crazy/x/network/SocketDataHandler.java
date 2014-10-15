@@ -162,7 +162,8 @@ public class SocketDataHandler {
                     mContentLength = 0;
                     result = true;
 
-                    mFileOutputStream = new FileOutputStream("/sdcard/b.pcm");
+                    mFileOutputStream = new FileOutputStream(
+                            "/sdcard/receiver.pcm");
                     mXPlayer = new XPlayer();
                     mXPlayer.startPlay();
                     break;
@@ -193,6 +194,12 @@ public class SocketDataHandler {
         }
 
         return result;
+    }
+
+    public void release() {
+        if (mXPlayer != null) {
+            mXPlayer.stopPlay();
+        }
     }
 
 }

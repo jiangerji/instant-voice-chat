@@ -27,6 +27,8 @@ public class XPlayer extends Thread {
     private final Object mMutex = new Object();
     private volatile boolean isRunning = true;
 
+    XDecoder mXDecoder = null;
+
     private Queue<SocketByteBuffer> mAudioBuffers = new LinkedList<SocketByteBuffer>();
 
     public void putData(byte[] audioData, int offset, int count) {
@@ -59,13 +61,13 @@ public class XPlayer extends Thread {
 
     @SuppressWarnings("deprecation")
     private void playStream() {
-        XDecoder decoder = null;
         try {
             android.os.Process
                     .setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
 
-            decoder = new XDecoder(new XDecoderListener() {
-                FileOutputStream fos = new FileOutputStream("/sdcard/s.pcm");
+            mXDecoder = new XDecoder(new XDecoderListener() {
+                FileOutputStream fos = new FileOutputStream(
+                        "/sdcard/Xplayer.pcm");
                 AudioTrack mAudioTrack = null;
 
                 @Override
@@ -114,7 +116,7 @@ public class XPlayer extends Thread {
                     }
                 }
             });
-            decoder.startDecoder();
+            mXDecoder.startDecoder();
 
             Log.d(TAG, "Start Play Stream!");
             byte[] tempBuffer = null;
@@ -125,8 +127,8 @@ public class XPlayer extends Thread {
                 synchronized (mMutex) {
                     if (mAudioBuffers.size() > 0) {
                         tempBuffer = mAudioBuffers.poll().array();
-                        //                        fos.write(tempBuffer);
-                        decoder.putData(tempBuffer, tempBuffer.length);
+                        // fos.write(tempBuffer);
+                        mXDecoder.putData(tempBuffer, tempBuffer.length);
                     } else if (mFillBufferFinished) {
                         Log.d(TAG, "Play Finished!");
                         break;
@@ -149,7 +151,7 @@ public class XPlayer extends Thread {
     private void playFile() {
         FileInputStream mFileInputStream = null;
         AudioTrack atrack = null;
-        XDecoder decoder = null;
+
         try {
             mFileInputStream = new FileInputStream(DEBUG_FILENAME);
 
@@ -171,7 +173,8 @@ public class XPlayer extends Thread {
 
             final AudioTrack mAudioTrack = atrack;
 
-            decoder = new XDecoder(new XDecoderListener() {
+            mXDecoder = new XDecoder(new XDecoderListener() {
+                FileOutputStream fos = new FileOutputStream("/sdcard/p.pcm");
 
                 @Override
                 public void onDecoderStop() {
@@ -183,6 +186,11 @@ public class XPlayer extends Thread {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    try {
+                        fos.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
@@ -192,20 +200,27 @@ public class XPlayer extends Thread {
                 @Override
                 public void onDecoderContent(short[] content, int length) {
                     mAudioTrack.write(content, 0, length);
+                    byte[] buffer = new byte[length * 2];
+                    CommonUtils.short2byte(content, buffer, length);
+                    try {
+                        fos.write(buffer, 0, length * 2);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
-            decoder.startDecoder();
+            mXDecoder.startDecoder();
 
             int count = 0;
             while (isRunning() && (count = mFileInputStream.read(buffer)) > 0) {
                 Log.d(TAG, "write " + count + "bytes");
-                decoder.putData(buffer, count);
+                mXDecoder.putData(buffer, count);
             }
         } catch (IOException e) {
             Log.d(TAG, "Exeption:" + e.toString());
         } finally {
-            if (decoder != null) {
-                decoder.stopDecoder();
+            if (mXDecoder != null) {
+                mXDecoder.stopDecoder();
             }
 
             if (mFileInputStream != null) {
@@ -232,6 +247,7 @@ public class XPlayer extends Thread {
      */
     public void stopPlay() {
         setRunning(false);
+        mXDecoder.stopDecoder();
     }
 
     private void setRunning(boolean isRunning) {

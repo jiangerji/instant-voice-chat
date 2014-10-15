@@ -92,12 +92,14 @@ public class MainActivity extends Activity {
     }
 
     private FileOutputStream mFileOutputStream = null;
+    private FileOutputStream mFileOutputStream2 = null;
     PCMRecorderListener mListener = new PCMRecorderListener() {
 
         @Override
         public void onRecordStart() {
             try {
                 mFileOutputStream = new FileOutputStream("/sdcard/s.spx");
+                mFileOutputStream2 = new FileOutputStream("/sdcard/s.pcm");
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
@@ -107,6 +109,7 @@ public class MainActivity extends Activity {
         public void onRecordFinish() {
             try {
                 mFileOutputStream.close();
+                mFileOutputStream2.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -123,8 +126,17 @@ public class MainActivity extends Activity {
             }
 
             Log.d("cmd", "Send Speaing Content:" + length);
-            socketThreadManager.sendMsg(SocketCmdUtils.sendSpeakingContent(content,
-                    length));
+            socketThreadManager.sendMsg(SocketCmdUtils.sendSpeakingContent(
+                    content, length));
+        }
+
+        @Override
+        public void onRecondPCMContent(byte[] content, int length) {
+            try {
+                mFileOutputStream2.write(content, 0, length);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     };
 }
